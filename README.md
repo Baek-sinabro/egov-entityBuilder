@@ -1,6 +1,6 @@
 작성자 : sinabro
 
-연락처 : sinabro.sig61@gmail.com
+연락처 : --;;
 
 목적 : 전자정부프레임웍에서 mybatis 연동으로 사용시 insert , update , delete , select 쿼리를 매번
 작성하는 번거로움이 있어 자동으로 mybatis용 mapper를 생성해 주고 Table에 대응하는 vo를 자동으로 생성해 준다.
