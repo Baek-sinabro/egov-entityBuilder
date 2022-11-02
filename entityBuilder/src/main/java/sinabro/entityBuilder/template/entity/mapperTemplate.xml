@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- by https://github.com/Baek-sinabro/egov-entityBuilder.git -->
+<mapper namespace="{{config.mapperNamespace}}.entity.{{camelName}}">
+
+	<select id="selectList" parameterType="Map" resultType="egovMap">
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.selectList */
+		SELECT {{#columns}}
+			{{#if (neq @index 0)}},{{/if}}{{name}}{{/columns}}
+			{{#columns}}{{#if (eq name 'DUNGROKJA_CODE')}},(SELECT WHOIWON_YIRUM FROM TB_WHOIWON WHERE WHOIWON_CODE = {{../name}}.{{name}}) DUNGROKJA_YIRUM {{/if}}{{/columns}}
+			{{#foreignKeys}}{{#if (eq refTable config.systemTable)}},(SELECT {{config.systemNameField}} FROM {{config.systemTable}} WHERE {{../name}}.{{name}} = {{config.systemCodeField}}) {{name}}_{{config.systemNameAliasSurffix}} {{/if}}
+			{{/foreignKeys}}
+			<include refid = "entity.totalPageInfo"/>
+			
+		FROM {{name}}
+		WHERE 1=1
+			{{#columns}}<if test="{{camelName}} != null and {{camelName}} != ''">
+				AND {{name}} = #{ {{camelName}} }								
+			</if>
+			{{/columns}}
+			{{#columns}}<if test="{{camelCase (concat 'sch_' name)}} != null and {{camelCase (concat 'sch_' name)}} != '' ">
+				AND {{name}} = #{ {{camelCase (concat 'sch_' name)}} }								
+			</if>
+			{{/columns}}
+			{{#columns}}{{#if (in dataType 'VARCHAR2,NVARCHAR2')}}<if test="{{camelCase (concat 'like_' name)}} != null and {{camelCase (concat 'like_' name)}} != '' ">
+				AND {{name}} LIKE '%' || #{ {{camelCase (concat 'like_' name)}} } || '%'							
+			</if>{{/if}}
+			{{/columns}}
+			<include refid = "entity.orderBy"/>
+			<include refid = "entity.pageOffset"/>
+			
+	</select>
+	
+	<select id="selectId" parameterType="Map" resultType="egovMap">
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.selectId */
+		SELECT {{#columns}}
+			{{#if (neq @index 0)}},{{/if}}{{name}}{{/columns}}
+			{{#foreignKeys}}{{#if (eq refTable config.systemTable)}},(SELECT {{config.systemNameField}} FROM {{config.systemTable}} WHERE {{../name}}.{{name}} = {{config.systemCodeField}}) {{name}}_{{config.systemNameAliasSurffix}} {{/if}}
+			{{/foreignKeys}}
+		FROM {{name}}
+		WHERE 1=1
+			{{#primaryKeys}}AND {{name}} = #{ {{camelCase name}} }
+			{{/primaryKeys}}
+	</select>
+	
+	<insert id="insert" parameterType="Map">
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.insert */
+		INSERT INTO {{name}}
+		({{#columns}}
+			<if test="{{camelName}} != null">{{#if (neq @index 0)}},{{/if}}{{name}}</if>{{/columns}}		
+		)
+		VALUES
+		({{#columns}}
+			<if test="{{camelName}} != null">{{#if (neq @index 0)}},{{/if}}#{ {{camelName}} }</if>{{/columns}}
+		)
+	</insert>
+	
+	<!-- updateWithPK PK 값은  updatekey ,updatekey1, .... -->
+	<update id="updateWithPK" parameterType="Map" >
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.updateWithPK */
+		UPDATE {{name}} SET
+		{{#primaryKeys}}
+			{{#if (neq @index 0)}},{{/if}}{{name}} = {{name}} 
+		{{/primaryKeys}}
+		{{#notPKcolumns}}
+			<if test="{{camelName}} != null">
+				,{{name}} = #{ {{camelName}} }
+			</if>
+		{{/notPKcolumns}}
+		WHERE 1=1
+		{{#primaryKeys}}AND {{name}} = #{ updatekey{{#if (neq @index 0)}}{{@index}}{{/if}} }
+		{{/primaryKeys}}
+	</update>
+	
+	<!-- deleteWithPK PK 값은  deletekey ,deletekey1, .... -->
+	<delete id="deleteWithPK" parameterType="Map" >
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.deleteWithPK */
+		DELETE FROM {{name}}
+		WHERE 1=1
+		{{#primaryKeys}}AND {{name}} = #{ deletekey{{#if (neq @index 0)}}{{@index}}{{/if}} }
+		{{/primaryKeys}}
+	</delete>
+	
+	<delete id="delete" parameterType="Map" >
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.deleteWithPK */
+		DELETE FROM {{name}}
+		WHERE 1=1
+		{{#primaryKeys}}AND {{name}} = #{ {{camelCase name}} }
+		{{/primaryKeys}}
+	</delete>
+	
+	<update id="merge" parameterType="Map">
+		/* {{name}}_mapper.xml  {{config.mapperNamespace}}.entity.{{camelName}}.merge */
+		MERGE INTO {{name}} T
+		USING DUAL
+		ON ({{#primaryKeys}}{{#if (neq @index 0)}} AND {{/if}}{{name}}=#{ {{camelCase name}} } {{/primaryKeys}})
+		WHEN MATCHED THEN
+			UPDATE SET 
+	{{#notPKcolumns}}
+		{{#if (neq name 'DUNGROK_YILSI')}}
+			{{#if (eq allowNullYN 'N')}}
+				{{#if (neq @index 0)}},{{/if}}{{name}} = #{ {{camelName}} }
+			{{/if}}	
+		{{/if}}	
+	{{/notPKcolumns}}
+	{{#notPKcolumns}} 
+		{{#if (neq name 'DUNGROK_YILSI')}}	
+			{{#if (eq allowNullYN 'Y')}}
+				<if test="{{camelName}}!=null">{{#if (neq @index 0)}},{{/if}}{{name}} = #{ {{camelName}} }</if>	
+			{{/if}}	
+		{{/if}}
+	{{/notPKcolumns}}
+		WHEN NOT MATCHED THEN
+			INSERT 
+			(
+	{{#columns}}
+		{{#if (neq name 'DUNGROK_YILSI')}}
+			{{#if (eq allowNullYN 'N')}}
+				{{#if (neq @index 0)}},{{/if}}{{name}}
+			{{/if}}
+		{{/if}}
+	{{/columns}}
+	{{#columns}}
+		{{#if (neq name 'DUNGROK_YILSI')}}
+			{{#if (eq allowNullYN 'Y')}}
+				<if test="{{camelName}}!=null">{{#if (neq @index 0)}},{{/if}}{{name}}</if>
+			{{/if}}
+		{{/if}}
+	{{/columns}}		
+			)
+			VALUES
+			(
+	{{#columns}}
+		{{#if (neq name 'DUNGROK_YILSI')}}
+			{{#if (neq name 'DUNGROK_YILSI')}}
+				{{#if (eq allowNullYN 'N')}}
+					{{#if (neq @index 0)}},{{/if}}#{ {{camelName}} }
+				{{/if}}
+			{{/if}}
+		{{/if}}
+	{{/columns}}
+	{{#columns}}
+		{{#if (neq name 'DUNGROK_YILSI')}}
+			{{#if (neq name 'DUNGROK_YILSI')}}
+				{{#if (eq allowNullYN 'Y')}}
+					<if test="{{camelName}}!=null">{{#if (neq @index 0)}},{{/if}}#{ {{camelName}} }</if>
+				{{/if}}
+			{{/if}}
+		{{/if}}
+	{{/columns}}
+			)
+	</update>
+
+</mapper>

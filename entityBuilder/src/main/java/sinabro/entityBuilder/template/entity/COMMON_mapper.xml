@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE m1apper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- by https://github.com/Baek-sinabro/egov-entityBuilder.git -->
+<mapper namespace="entity">
+
+	<select id="yilsi" resultType="String">
+		SELECT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS') YILSI FROM DUAL
+	</select>
+
+	<sql id="totalPageInfo" >
+		, count(*) over() TOTAL_CNT
+		<if test="pagingYN != null and pagingYN == 'Y'.toString()">
+		, CEIL(count(*) over() / #{perPage}) TOTAL_PAGES
+		</if>
+	</sql>
+	
+	<sql id="pageOffset" >
+		<if test="pagingYN != null and pagingYN == 'Y'.toString()">
+		OFFSET (#{curPage} - 1) * #{perPage}  ROWS FETCH NEXT #{perPage} ROWS ONLY
+		</if>
+	</sql>
+	
+	<sql id="orderBy" >
+		<if test="orderBy != null and orderBy != ''">
+		ORDER BY ${orderBy}
+		</if>
+	</sql>
+	
+</mapper>
