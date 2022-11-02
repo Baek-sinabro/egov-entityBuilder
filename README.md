@@ -14,8 +14,11 @@
 5. insert , update시 필드값 최대길이 점증해서 Exception으로 메시지 처리해 준다.
 
 사용방법 : java -jar entityBuilder [config.property 파일경로]
+
 *config.property 파일경로가 없으면 현재 폴더에서 config.property를 찾는다.
+
 *config.property가 없으면 config.property파일을 생성해준다. 설정값 편집해서 실행하면 된다.
+
 *config.property에 대한 설명은 config.property파일에 명시되어 있다.
 
 spring적용 예시:
